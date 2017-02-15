@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
-#include <cstdio>
+#include<cstdio>
 #pragma comment(lib, "ws2_32.lib")  //加载 ws2_32.dll
 
 #define BUF_SIZE 100
@@ -16,6 +16,9 @@ int main() {
 	sockaddr_in sockAddr;
 	memset(&sockAddr, 0, sizeof(sockAddr));  //每个字节都用0填充
 	sockAddr.sin_family = PF_INET;
+	//char serverAddr[50];
+	//printf("Please input the IP address of server:\n");
+	//scanf_s("%s", serverAddr);
 	sockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	sockAddr.sin_port = htons(10101);
 
