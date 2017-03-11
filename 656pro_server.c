@@ -29,6 +29,7 @@
 #define MAXBUF 1024
 
 int portCommunication(void);  //the functionality of communicating with serial port.
+void addLog(char *logtext, char *ip);  //the functionality of keeping log file
 
 int portCommunication(void)
 {
@@ -47,6 +48,30 @@ int portCommunication(void)
 		fcntl(fd, F_SETFL, 0);
 		return fd;
 	}
+}
+
+void addLog(char *logtext, char *ip)
+{
+	FILE *fp;
+	if(!(fp = fopen("log.txt", "a+")))
+	{
+		printf("cannot open the log file. \n");
+		exit(0);
+	}
+	time_t rawtime;
+	struct tm *timeinfo;
+	time(&rawtime);
+	timeinfo = localtime (&rawtime);
+	printf("%s", asctime(timeinfo));
+	fseek(fp, 0, SEEK_END);
+	fwrite(ip,strlen(ip), 1, fp);
+	fprintf(fp, "\t");
+	fwrite(logtext, strlen(logtext), 1, fp);
+	fprintf(fp, "\t");
+	fwrite(asctime(timeinfo), strlen(asctime(timeinfo)), 1, fp);
+	fprintf(fp, "\n");
+	fclose(fp);
+	
 }
 
 
@@ -142,9 +167,26 @@ int main(int argc , char* argv[])
 			if(len > 0)
 			{
 				printf("Message received successful: '%s', %d Byte received.\n", buf, len);
+				char *delim = "/";
+				char *logtext = NULL;
+				char *command = NULL;
+	
+				
+	
+				logtext = strtok(buf, delim);
+				
+				//printf("%s\n", logtext);
+				command = strtok(NULL, delim);
+				//printf("%s\n", command);
+				
+				addLog(logtext, inet_ntoa(their_addr.sin_addr));
+				
 				printf("Now sending message to Arduino board...\n");
 				fd = portCommunication();
-				write(fd, buf, strlen(buf));
+				write(fd, command, strlen(command));
+				//bzero(buf, MAXBUF + 1);
+				//read(fd, buf, MAXBUF + 1);
+				//printf("\n%s\n", buf);
 				close(fd);
 				printf("Done...\n");
 			
@@ -204,9 +246,24 @@ int main(int argc , char* argv[])
 					{
 						printf("Commands from %s, port %d, socket %d\n", inet_ntoa(their_addr.sin_addr), ntohs(their_addr.sin_port), new_fd);
 						printf("Message received successful: '%s', %d Byte received.\n", buf, len);
+						char *delim = "/";
+						char *logtext = NULL;
+						char *command = NULL;
+				
+	
+						logtext = strtok(buf, delim);
+						//printf("%s\n", logtext);
+						
+						addLog(logtext, inet_ntoa(their_addr.sin_addr));
+						
+						command = strtok(NULL, delim);
+						//printf("%s\n", command);
 						printf("Now sending message to Arduino...\n");
 						fd = portCommunication();
-						write(fd, buf, strlen(buf));
+						write(fd, command, strlen(command));
+						//bzero(buf, MAXBUF + 1);
+						//read(fd, buf, MAXBUF + 1);
+						//printf("\n%s\n", buf);
 						close(fd);
 						printf("Done...\n");
 						
